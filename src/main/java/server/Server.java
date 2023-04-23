@@ -2,6 +2,7 @@ package Server;
 
 import FileServer.FileImpl;
 
+import java.io.File;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;

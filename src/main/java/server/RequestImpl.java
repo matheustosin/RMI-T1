@@ -2,6 +2,7 @@ package Server;
 
 import FileServer.FileInterface;
 
+import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -26,7 +27,7 @@ public class RequestImpl extends UnicastRemoteObject implements RequestInterface
     }
 
     @Override
-    public String read() {
+    public String read() throws IOException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
         return fileInterface.read();
