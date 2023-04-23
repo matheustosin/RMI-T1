@@ -2,6 +2,7 @@ package fileServer;
 
 import java.io.*;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.LocalTime;
 import java.util.concurrent.Semaphore;
 
 public class FileImpl extends UnicastRemoteObject implements FileInterface {
@@ -115,5 +116,15 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
         }
 
         return content.toString();
+    }
+
+    private void saveLog(String operation, int sourceId) throws IOException {
+        BufferedWriter outStream = new BufferedWriter(new FileWriter("log.txt", true));
+
+        var localTime = LocalTime.now();
+
+        outStream.write("Client "+ sourceId + " - " +"(" + localTime + ") " + "Operation " + operation + " occurred successfully\n ");
+
+        outStream.close();
     }
 }
