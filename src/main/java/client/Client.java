@@ -1,6 +1,6 @@
-package Client;
+package client;
 
-import Server.RequestInterface;
+import server.RequestInterface;
 
 import java.io.IOException;
 import java.rmi.Naming;

@@ -1,4 +1,4 @@
-package FileServer;
+package fileServer;
 
 import java.io.IOException;
 import java.rmi.Remote;

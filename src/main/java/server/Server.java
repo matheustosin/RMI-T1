@@ -1,6 +1,6 @@
-package Server;
+package server;
 
-import FileServer.FileImpl;
+import fileServer.FileImpl;
 
 import java.io.File;
 import java.rmi.Naming;

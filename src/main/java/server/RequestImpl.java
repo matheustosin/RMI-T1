@@ -1,6 +1,6 @@
-package Server;
+package server;
 
-import FileServer.FileInterface;
+import fileServer.FileInterface;
 
 import java.io.IOException;
 import java.rmi.Naming;

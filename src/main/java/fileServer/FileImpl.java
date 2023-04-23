@@ -1,4 +1,4 @@
-package FileServer;
+package fileServer;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -9,11 +9,11 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     private static final Semaphore deletionSemaphore = new Semaphore(1);
     private static final Semaphore insertionSemaphore = new Semaphore(1);
     private static final Semaphore readSemaphore = new Semaphore(1);
-    private BufferedWriter file;
+    private BufferedWriter writer;
     private BufferedReader reader;
 
     public FileImpl() throws IOException {
-        file = new BufferedWriter(new FileWriter("src\\main\\java\\file\\sharedFile.txt", true));
+        writer = new BufferedWriter(new FileWriter("src\\main\\java\\file\\sharedFile.txt", true));
         reader = new BufferedReader(new FileReader("src\\main\\java\\file\\sharedFile.txt"));
     }
 
@@ -25,14 +25,17 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             String fileLine;
             Boolean existentName = false;
 
-            while ((fileLine = reader.readLine()) != null) {
+            while ((fileLine = reader.readLine()) != null & (existentName == false)) {
                 if(fileLine.equalsIgnoreCase(newLine)) {
-
+                    existentName = true;
                 }
             }
-            // TODO - fazer logica de inserir no arquivo
-            // TODO - Adicionar tempo que o sor pediu para simular lock (100ms)
-            // TODO - Inser¸c˜oes ocorrem adicionando dados ao final do arquivo, dessa forma estas devem ser mutualmente exclusivas, podendo uma inser¸c˜ao ocorrer em paralelo com um n´umero qualquer de leituras.
+            //logica de inserir no arquivo
+            if(existentName == false) {
+                writer.write(newLine);
+            }
+            //Tempo para simular lock (100ms)
+            Thread.sleep(100);
             insertionSemaphore.release();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
