@@ -15,9 +15,9 @@ public class Client {
         RequestInterface requestInterface = getRequestInterface(connectLocation);
 
         //TODO Pegar ação do cliente e chamar método correto
-        requestInterface.insert("teste");
+        //requestInterface.insert("teste");
         requestInterface.delete("teste");
-        requestInterface.read();
+        //requestInterface.read();
         //TODO Gerenciar retorno para o cliente
     }
 

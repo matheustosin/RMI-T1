@@ -38,7 +38,6 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
         writer.write("Us");
         writer.newLine();
         writer.flush();
-        writer.close();
     }
 
     @Override
@@ -86,10 +85,10 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
                 if(fileLine.trim().equals(line)) {
                     continue;
                 }
-                writer.write(fileLine);
-                writer.newLine();
-                writer.flush();
+                tempWriter.write(fileLine);
+                tempWriter.newLine();
             }
+            tempWriter.flush();
             boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
             tempWriter.close();
             //TODO Tratamento de erro com o lineDeleted (se der algum problema, vira falso)
