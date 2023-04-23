@@ -15,7 +15,7 @@ public class Client {
 
         //TODO Pegar ação do cliente e chamar método correto
         requestInterface.insert("teste");
-        requestInterface.delete(1);
+        requestInterface.delete("filme 2");
         requestInterface.read();
         //TODO Gerenciar retorno para o cliente
     }

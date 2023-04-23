@@ -20,10 +20,10 @@ public class RequestImpl extends UnicastRemoteObject implements RequestInterface
     }
 
     @Override
-    public void delete(int lineNumber) {
+    public void delete(String line) {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
-        fileInterface.delete(lineNumber);
+        fileInterface.delete(line);
     }
 
     @Override

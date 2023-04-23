@@ -20,19 +20,20 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     @Override
     public void insert(String newLine) {
         try {
+            //TODO Verificar se deve lockar para não pode deletar ao estar inserindo também
             insertionSemaphore.acquire();
             //Verificar se já não existe o valor no arquivo
             String fileLine;
             Boolean existentName = false;
 
             while ((fileLine = reader.readLine()) != null & (existentName == false)) {
-                if(fileLine.equalsIgnoreCase(newLine)) {
+                if(fileLine.trim().equalsIgnoreCase(newLine)) {
                     existentName = true;
                 }
             }
             //logica de inserir no arquivo
             if(existentName == false) {
-                writer.write(newLine);
+                writer.write(newLine+ "\r\n");
             }
             //Tempo para simular lock (100ms)
             Thread.sleep(100);
@@ -45,16 +46,31 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     }
 
     @Override
-    public void delete(int lineNumber) {
+    public void delete(String line) {
         try {
             insertionSemaphore.acquire();
             deletionSemaphore.acquire();
             readSemaphore.acquire();
             // TODO - fazer logica de deletar no arquivo
+            File tempFile = new File("tempFile.txt");
+            BufferedWriter tempWriter = new BufferedWriter(new FileWriter(tempFile));
+            String fileLine;
+
+            while((fileLine = reader.readLine()) != null) {
+                if(fileLine.trim().equals(line)) {
+                    continue;
+                }
+                writer.write(fileLine + System.getProperty("line.separator"));
+            }
+            boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
+            tempWriter.close();
+            //TODO Tratamento de erro com o lineDeleted (se der algum problema, vira falso)
             insertionSemaphore.release();
             deletionSemaphore.release();
             readSemaphore.release();
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
