@@ -1,4 +1,4 @@
-package fileServer;
+package FileServer;
 
 import java.rmi.Remote;
 

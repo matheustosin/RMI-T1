@@ -1,6 +1,6 @@
-package server;
+package Server;
 
-import fileServer.FileImpl;
+import FileServer.FileImpl;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;

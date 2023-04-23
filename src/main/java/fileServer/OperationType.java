@@ -1,4 +1,4 @@
-package fileServer;
+package FileServer;
 
 public enum OperationType {
     INSERT,
