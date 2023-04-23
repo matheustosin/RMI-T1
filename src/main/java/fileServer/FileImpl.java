@@ -1,5 +1,8 @@
 package FileServer;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Semaphore;
@@ -9,7 +12,8 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     private static final Semaphore insertionSemaphore = new Semaphore(1);
     private static final Semaphore readSemaphore = new Semaphore(1);
 
-    public FileImpl() throws RemoteException {
+    public FileImpl() throws IOException {
+        BufferedWriter file = new BufferedWriter(new FileWriter("src\\main\\java\\file\\sharedFile.txt", true));
     }
 
     @Override
