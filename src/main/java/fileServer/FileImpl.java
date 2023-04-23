@@ -47,15 +47,15 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             insertionSemaphore.acquire();
             //Verificar se já não existe o valor no arquivo
             String fileLine;
-            Boolean existentName = false;
+            boolean existentName = false;
 
-            while ((fileLine = reader.readLine()) != null & (existentName == false)) {
+            while ((fileLine = reader.readLine()) != null & (!existentName)) {
                 if(fileLine.trim().equalsIgnoreCase(newLine)) {
                     existentName = true;
                 }
             }
             //logica de inserir no arquivo
-            if(existentName == false) {
+            if(!existentName) {
                 writer.write(newLine);
                 writer.newLine();
             }
@@ -63,9 +63,7 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             //Tempo para simular lock (100ms)
             Thread.sleep(100);
             insertionSemaphore.release();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
     }
