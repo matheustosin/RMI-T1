@@ -1,7 +1,6 @@
 package fileServer;
 
 import java.io.*;
-import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.Semaphore;
 
@@ -13,11 +12,33 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     private BufferedReader reader;
 
     public FileImpl() throws IOException {
-        writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
-        //TODO Criar arquivo base
-        writer.write("teste 1");
-        writer.flush();
+        createSharedFile();
         reader = new BufferedReader(new FileReader("sharedFile.txt"));
+    }
+
+    private void createSharedFile() throws IOException {
+        boolean newFileWillBeCreated;
+        try {
+            newFileWillBeCreated = new File("sharedFile.txt").delete();
+            if (newFileWillBeCreated) {
+                newFile();
+            }
+        } catch (Exception ignored) {
+        } finally {
+            newFile();
+        }
+    }
+
+    private void newFile() throws IOException {
+        writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
+        writer.write("Get Out");
+        writer.newLine();
+        writer.write("BlacKkKlansman");
+        writer.newLine();
+        writer.write("Us");
+        writer.newLine();
+        writer.flush();
+        writer.close();
     }
 
     @Override
