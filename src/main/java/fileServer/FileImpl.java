@@ -14,6 +14,9 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
 
     public FileImpl() throws IOException {
         writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
+        //TODO Criar arquivo base
+        writer.write("teste 1");
+        writer.flush();
         reader = new BufferedReader(new FileReader("sharedFile.txt"));
     }
 
@@ -33,8 +36,10 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             }
             //logica de inserir no arquivo
             if(existentName == false) {
-                writer.write(newLine+ "\r\n");
+                writer.write(newLine);
+                writer.newLine();
             }
+            writer.flush();
             //Tempo para simular lock (100ms)
             Thread.sleep(100);
             insertionSemaphore.release();
@@ -60,7 +65,9 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
                 if(fileLine.trim().equals(line)) {
                     continue;
                 }
-                writer.write(fileLine + System.getProperty("line.separator"));
+                writer.write(fileLine);
+                writer.newLine();
+                writer.flush();
             }
             boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
             tempWriter.close();
