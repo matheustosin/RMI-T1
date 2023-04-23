@@ -18,7 +18,7 @@ public class Server {
         // type 1 == server file
         if ("0".equals(args[2])) {
             startNormalServer(args[0], Integer.parseInt(args[1]));
-        } else {
+        } else if("1".equals(args[2])){
             startFileServer(args[0], Integer.parseInt(args[1]));
         }
 

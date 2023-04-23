@@ -10,12 +10,13 @@ public class Client {
         //TODO Criar servers, definir portas e hostnames
         //TODO Sortear server para requisição do client
         String remoteHostName = args[0];
+        //TODO Tirar a porta fixa do server
         String connectLocation = "rmi://" + remoteHostName + ":1099/request";
         RequestInterface requestInterface = getRequestInterface(connectLocation);
 
         //TODO Pegar ação do cliente e chamar método correto
         requestInterface.insert("teste");
-        requestInterface.delete("filme 2");
+        requestInterface.delete("teste");
         requestInterface.read();
         //TODO Gerenciar retorno para o cliente
     }

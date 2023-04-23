@@ -13,8 +13,8 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     private BufferedReader reader;
 
     public FileImpl() throws IOException {
-        writer = new BufferedWriter(new FileWriter("src\\main\\java\\file\\sharedFile.txt", true));
-        reader = new BufferedReader(new FileReader("src\\main\\java\\file\\sharedFile.txt"));
+        writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
+        reader = new BufferedReader(new FileReader("sharedFile.txt"));
     }
 
     @Override

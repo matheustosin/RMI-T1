@@ -13,14 +13,14 @@ public class RequestImpl extends UnicastRemoteObject implements RequestInterface
     }
 
     @Override
-    public void insert(String line) {
+    public void insert(String line) throws RemoteException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
         fileInterface.insert(line);
     }
 
     @Override
-    public void delete(String line) {
+    public void delete(String line) throws RemoteException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
         fileInterface.delete(line);
