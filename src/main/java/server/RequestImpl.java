@@ -1,10 +1,12 @@
 package server;
 
 import fileServer.FileInterface;
+import object.ConnectionInfo;
 
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class RequestImpl extends UnicastRemoteObject implements RequestInterface {
@@ -13,24 +15,24 @@ public class RequestImpl extends UnicastRemoteObject implements RequestInterface
     }
 
     @Override
-    public void insert(String line) throws RemoteException {
+    public void insert(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
-        fileInterface.insert(line);
+        fileInterface.insert(line, connectionInfo);
     }
 
     @Override
-    public void delete(String line) throws RemoteException {
+    public void delete(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
-        fileInterface.delete(line);
+        fileInterface.delete(line, connectionInfo);
     }
 
     @Override
-    public String read() throws IOException {
+    public String read(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException {
         String connectLocation = "rmi://" + "localhost" + ":1100/file";
         FileInterface fileInterface = getFileInterface(connectLocation);
-        return fileInterface.read();
+        return fileInterface.read(connectionInfo);
     }
 
     private static FileInterface getFileInterface(String connectLocation) {

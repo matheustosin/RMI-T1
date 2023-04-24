@@ -1,11 +1,14 @@
 package server;
 
+import object.ConnectionInfo;
+
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.server.ServerNotActiveException;
 
 public interface RequestInterface extends Remote {
-    void insert(String line) throws RemoteException;
-    void delete(String line) throws RemoteException;
-    String read() throws IOException;
+    void insert(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException;
+    void delete(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException;
+    String read(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException;
 }

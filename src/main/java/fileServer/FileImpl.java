@@ -1,37 +1,37 @@
 package fileServer;
 
+import object.ConnectionInfo;
+
 import java.io.*;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalTime;
 import java.util.concurrent.Semaphore;
 
 public class FileImpl extends UnicastRemoteObject implements FileInterface {
+
+    private static final long serialVersionUID = -4655735859349646646L;
+
     private static final Semaphore deletionSemaphore = new Semaphore(1);
     private static final Semaphore insertionSemaphore = new Semaphore(1);
     private static final Semaphore readSemaphore = new Semaphore(1);
-    private BufferedWriter writer;
-    private BufferedReader reader;
+    public static final int MILLIS = 5000;
 
     public FileImpl() throws IOException {
         createSharedFile();
-        reader = new BufferedReader(new FileReader("sharedFile.txt"));
     }
 
     private void createSharedFile() throws IOException {
-        boolean newFileWillBeCreated;
         try {
-            newFileWillBeCreated = new File("sharedFile.txt").delete();
-            if (newFileWillBeCreated) {
+            File file = new File("sharedFile.txt");
+            if (!file.exists()) {
                 newFile();
             }
-        } catch (Exception ignored) {
-        } finally {
-            newFile();
-        }
+        } catch (Exception ignored) {}
     }
 
     private void newFile() throws IOException {
-        writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
         writer.write("Get Out");
         writer.newLine();
         writer.write("BlacKkKlansman");
@@ -39,44 +39,66 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
         writer.write("Us");
         writer.newLine();
         writer.flush();
+        writer.close();
     }
 
     @Override
-    public void insert(String newLine) {
+    public void insert(String newLine, ConnectionInfo connectionInfo) throws ServerNotActiveException, IOException {
         try {
-            //TODO Verificar se deve lockar para não pode deletar ao estar inserindo também
+            saveLog("validando recurso para inserir", connectionInfo);
+            if (insertionSemaphore.availablePermits() < 1 || deletionSemaphore.availablePermits() < 1) {
+                saveLog("está aguardando para realizar a inserção", connectionInfo);
+            }
             insertionSemaphore.acquire();
-            //Verificar se já não existe o valor no arquivo
+            deletionSemaphore.acquire();
+            saveLog("recurso alocado para insercao", connectionInfo);
             String fileLine;
             boolean existentName = false;
 
+            BufferedReader reader = new BufferedReader(new FileReader("sharedFile.txt"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
             while ((fileLine = reader.readLine()) != null & (!existentName)) {
                 if(fileLine.trim().equalsIgnoreCase(newLine)) {
                     existentName = true;
                 }
             }
-            //logica de inserir no arquivo
             if(!existentName) {
                 writer.write(newLine);
                 writer.newLine();
             }
             writer.flush();
-            //Tempo para simular lock (100ms)
-            Thread.sleep(100);
+            reader.close();
+            writer.close();
+            Thread.sleep(MILLIS);
+            if (existentName) {
+                saveLog("Nao pode inserir o mesmo filme '" + newLine + "' no arquivo com sucesso", connectionInfo);
+            } else {
+                saveLog("Inseriu a linha '" + newLine + "' no arquivo com sucesso", connectionInfo);
+            }
             insertionSemaphore.release();
-        } catch (InterruptedException | IOException e) {
+            deletionSemaphore.release();
+        } catch (InterruptedException | IOException | ServerNotActiveException e) {
+            saveLog("erro " + e.getMessage(), connectionInfo);
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void delete(String line) {
+    public void delete(String line, ConnectionInfo connectionInfo) throws ServerNotActiveException, IOException {
         try {
+            saveLog("validando recurso para deletar", connectionInfo);
+            if (insertionSemaphore.availablePermits() < 1 || deletionSemaphore.availablePermits() < 1 || readSemaphore.availablePermits() < 1) {
+                saveLog("está aguardando para realizar a deleção da linha", connectionInfo);
+            }
             insertionSemaphore.acquire();
             deletionSemaphore.acquire();
             readSemaphore.acquire();
+            saveLog("recurso alocado para deletar", connectionInfo);
             File tempFile = new File("tempFile.txt");
             BufferedWriter tempWriter = new BufferedWriter(new FileWriter(tempFile));
+            BufferedReader reader = new BufferedReader(new FileReader("sharedFile.txt"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
+
             String fileLine;
 
             while((fileLine = reader.readLine()) != null) {
@@ -94,26 +116,25 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             boolean deleted = oldFile.delete();
             boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
 
-            //TODO Tratamento de erro com o lineDeleted (se der algum problema, vira falso)
+            Thread.sleep(MILLIS);
+            saveLog("A linha '" + line + "' foi deletada do arquivo", connectionInfo);
             insertionSemaphore.release();
             deletionSemaphore.release();
             readSemaphore.release();
-
-            reader = new BufferedReader(new FileReader("sharedFile.txt"));
-            writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException | ServerNotActiveException e) {
+            saveLog("erro: "+ e.getMessage(), connectionInfo);
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public String read() throws IOException {
-        return readAllLines(reader);
+    public String read(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException {
+        return readAllLines(connectionInfo);
+
     }
 
-    private String readAllLines(BufferedReader reader) throws IOException {
+    private String readAllLines(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException {
+        BufferedReader reader = new BufferedReader(new FileReader("sharedFile.txt"));
         StringBuilder content = new StringBuilder();
         String line;
 
@@ -121,17 +142,22 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             content.append(line);
             content.append(System.lineSeparator());
         }
+        reader.close();
+        saveLog("Realizou uma leitura no arquivo com sucesso", connectionInfo);
 
+        Thread.sleep(MILLIS);
         return content.toString();
     }
 
-    private void saveLog(String operation, int sourceId) throws IOException {
+    private void saveLog(String message, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException {
         BufferedWriter outStream = new BufferedWriter(new FileWriter("log.txt", true));
 
         var localTime = LocalTime.now();
 
-        outStream.write("Client "+ sourceId + " - " +"(" + localTime + ") " + "Operation " + operation + " occurred successfully\n ");
-
+        outStream.write(localTime + " " + connectionInfo.getClientName() +
+                            " no server " + connectionInfo.getServerHost() + ":" + connectionInfo.getServerPort() +
+                            " " + message + "\n");
+        outStream.flush();
         outStream.close();
     }
 }

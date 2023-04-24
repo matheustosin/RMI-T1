@@ -19,17 +19,22 @@ public class Server {
             System.exit(1);
         }
 
-        // type 0 == server normal
-        // type 1 == server file
         if ("0".equals(args[1])) {
             for (int i = 0; i < 10; i++) {
-                startNormalServer(args[0], initialPortNormalServer+i);
+                runServer(args[0], initialPortNormalServer+i).run();
             }
             System.out.println("Servidores rodando nas portas: \n" + ports);
         } else if("1".equals(args[1])){
             startFileServer(args[0], fileServerPort);
+            System.out.println("Servidores rodando na porta: \n" + fileServerPort);
         }
 
+    }
+
+    public static Runnable runServer(String remoteHostName, int port) {
+        return () -> {
+            startNormalServer(remoteHostName, port);
+        };
     }
 
     private static void startNormalServer(String host, int port) {
