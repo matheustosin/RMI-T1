@@ -75,7 +75,6 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             insertionSemaphore.acquire();
             deletionSemaphore.acquire();
             readSemaphore.acquire();
-            // TODO - fazer logica de deletar no arquivo
             File tempFile = new File("tempFile.txt");
             BufferedWriter tempWriter = new BufferedWriter(new FileWriter(tempFile));
             String fileLine;
@@ -88,12 +87,20 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
                 tempWriter.newLine();
             }
             tempWriter.flush();
-            boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
+            reader.close();
+            writer.close();
             tempWriter.close();
+            File oldFile = new File("sharedFile.txt");
+            boolean deleted = oldFile.delete();
+            boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
+
             //TODO Tratamento de erro com o lineDeleted (se der algum problema, vira falso)
             insertionSemaphore.release();
             deletionSemaphore.release();
             readSemaphore.release();
+
+            reader = new BufferedReader(new FileReader("sharedFile.txt"));
+            writer = new BufferedWriter(new FileWriter("sharedFile.txt", true));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
