@@ -43,15 +43,15 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
     }
 
     @Override
-    public void insert(String newLine, ConnectionInfo connectionInfo) throws ServerNotActiveException, IOException {
+    public void insert(String newLine, String serverHost, String serverPort, String clientName) throws ServerNotActiveException, IOException {
         try {
-            saveLog("validando recurso para inserir", connectionInfo);
+            saveLog("validando recurso para inserir", serverHost, serverPort, clientName);
             if (insertionSemaphore.availablePermits() < 1 || deletionSemaphore.availablePermits() < 1) {
-                saveLog("está aguardando para realizar a inserção", connectionInfo);
+                saveLog("está aguardando para realizar a inserção", serverHost, serverPort, clientName);
             }
             insertionSemaphore.acquire();
             deletionSemaphore.acquire();
-            saveLog("recurso alocado para insercao", connectionInfo);
+            saveLog("recurso alocado para insercao", serverHost, serverPort, clientName);
             String fileLine;
             boolean existentName = false;
 
@@ -71,29 +71,29 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             writer.close();
             Thread.sleep(MILLIS);
             if (existentName) {
-                saveLog("Nao pode inserir o mesmo filme '" + newLine + "' no arquivo com sucesso", connectionInfo);
+                saveLog("Nao pode inserir o mesmo filme '" + newLine + "' no arquivo com sucesso", serverHost, serverPort, clientName);
             } else {
-                saveLog("Inseriu a linha '" + newLine + "' no arquivo com sucesso", connectionInfo);
+                saveLog("Inseriu a linha '" + newLine + "' no arquivo com sucesso", serverHost, serverPort, clientName);
             }
             insertionSemaphore.release();
             deletionSemaphore.release();
         } catch (InterruptedException | IOException | ServerNotActiveException e) {
-            saveLog("erro " + e.getMessage(), connectionInfo);
+            saveLog("erro " + e.getMessage(), serverHost, serverPort, clientName);
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void delete(String line, ConnectionInfo connectionInfo) throws ServerNotActiveException, IOException {
+    public void delete(String line, String serverHost, String serverPort, String clientName) throws ServerNotActiveException, IOException {
         try {
-            saveLog("validando recurso para deletar", connectionInfo);
+            saveLog("validando recurso para deletar", serverHost, serverPort, clientName);
             if (insertionSemaphore.availablePermits() < 1 || deletionSemaphore.availablePermits() < 1 || readSemaphore.availablePermits() < 1) {
-                saveLog("está aguardando para realizar a deleção da linha", connectionInfo);
+                saveLog("está aguardando para realizar a deleção da linha", serverHost, serverPort, clientName);
             }
             insertionSemaphore.acquire();
             deletionSemaphore.acquire();
             readSemaphore.acquire();
-            saveLog("recurso alocado para deletar", connectionInfo);
+            saveLog("recurso alocado para deletar", serverHost, serverPort, clientName);
             File tempFile = new File("tempFile.txt");
             BufferedWriter tempWriter = new BufferedWriter(new FileWriter(tempFile));
             BufferedReader reader = new BufferedReader(new FileReader("sharedFile.txt"));
@@ -117,23 +117,23 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             boolean lineDeleted = tempFile.renameTo(new File("sharedFile.txt"));
 
             Thread.sleep(MILLIS);
-            saveLog("A linha '" + line + "' foi deletada do arquivo", connectionInfo);
+            saveLog("A linha '" + line + "' foi deletada do arquivo", serverHost, serverPort, clientName);
             insertionSemaphore.release();
             deletionSemaphore.release();
             readSemaphore.release();
         } catch (InterruptedException | IOException | ServerNotActiveException e) {
-            saveLog("erro: "+ e.getMessage(), connectionInfo);
+            saveLog("erro: "+ e.getMessage(), serverHost, serverPort, clientName);
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public String read(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException {
-        return readAllLines(connectionInfo);
+    public String read(String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException, InterruptedException {
+        return readAllLines(serverHost, serverPort, clientName);
 
     }
 
-    private String readAllLines(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException {
+    private String readAllLines(String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException, InterruptedException {
         BufferedReader reader = new BufferedReader(new FileReader("sharedFile.txt"));
         StringBuilder content = new StringBuilder();
         String line;
@@ -143,19 +143,19 @@ public class FileImpl extends UnicastRemoteObject implements FileInterface {
             content.append(System.lineSeparator());
         }
         reader.close();
-        saveLog("Realizou uma leitura no arquivo com sucesso", connectionInfo);
+        saveLog("Realizou uma leitura no arquivo com sucesso", serverHost, serverPort, clientName);
 
         Thread.sleep(MILLIS);
         return content.toString();
     }
 
-    private void saveLog(String message, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException {
+    private void saveLog(String message, String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException {
         BufferedWriter outStream = new BufferedWriter(new FileWriter("log.txt", true));
 
         var localTime = LocalTime.now();
 
-        outStream.write(localTime + " " + connectionInfo.getClientName() +
-                            " no server " + connectionInfo.getServerHost() + ":" + connectionInfo.getServerPort() +
+        outStream.write(localTime + " " + clientName +
+                            " no server " + serverHost + ":" + serverPort +
                             " " + message + "\n");
         outStream.flush();
         outStream.close();

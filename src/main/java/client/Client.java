@@ -49,14 +49,14 @@ public class Client {
                 int randomvalues = random.nextInt(3);
                 if (randomMethod < 7) {
                     System.out.println("read");
-                    String content = requestInterface.read(new ConnectionInfo(remoteHostName, ports.get(randomPort), clientname));
+                    requestInterface.read(remoteHostName, ports.get(randomPort), clientname);
 //                    System.out.println(content);
                 } else if (randomMethod < 9) {
                     System.out.println("insert");
-                    requestInterface.insert(valuesInsert.get(randomvalues), new ConnectionInfo(remoteHostName, ports.get(randomPort), clientname));
+                    requestInterface.insert(valuesInsert.get(randomvalues), remoteHostName, ports.get(randomPort), clientname);
                 } else {
                     System.out.println("delete");
-                    requestInterface.delete(valuesDelete.get(randomvalues), new ConnectionInfo(remoteHostName, ports.get(randomPort), clientname));
+                    requestInterface.delete(valuesDelete.get(randomvalues),remoteHostName, ports.get(randomPort), clientname);
                 }
 
             } catch (IOException | ServerNotActiveException | InterruptedException e) {

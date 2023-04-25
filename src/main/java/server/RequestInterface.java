@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 
 public interface RequestInterface extends Remote {
-    void insert(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException;
-    void delete(String line, ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException;
-    String read(ConnectionInfo connectionInfo) throws IOException, ServerNotActiveException, InterruptedException;
+    void insert(String line, String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException;
+    void delete(String line, String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException;
+    String read(String serverHost, String serverPort, String clientName) throws IOException, ServerNotActiveException, InterruptedException;
 }
